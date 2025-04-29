@@ -61,9 +61,9 @@ exports.listarTurmas = async (req, res) => {
     let turma 
     
     if(aluno.tipo == "aluno"){
-      turma = await Turma.find({ alunos: alunoId }).populate('alunos', 'nome whatsapp').populate('liderId', 'nome whatsapp');
+      turma = await Turma.find({ alunos: alunoId }).populate('alunos', 'nome whatsapp').populate('liderId', '_id nome email whatsapp');
     } else if(aluno.tipo == "aluno-lider"){
-      turma = await Turma.find({ liderId: alunoId }).populate('alunos', 'nome whatsapp').populate('liderId', 'nome whatsapp');
+      turma = await Turma.find({ liderId: alunoId }).populate('alunos', 'nome whatsapp').populate('liderId', '_id nome email whatsapp');
     }
 
     if (!turma) return res.status(404).json({ message: 'Nenhuma turma encontrada.' });
