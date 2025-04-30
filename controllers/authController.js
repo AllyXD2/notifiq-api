@@ -19,9 +19,24 @@ exports.register = async (req, res) => {
       return res.status(400).json({ message: 'A senha deve ter pelo menos 6 caracteres.' });
     }
 
+    const userExists = await User.findOne({$or: [{email: email}, {nome: nome}, {whatsapp: whatsapp}]})
+
+    if(userExists) {
+      if(userExists.email == email) return res.status(400).json({ message: 'Já existe um usuário com esse email' });
+      if(userExists.nome == nome) return res.status(400).json({ message: 'Já existe um usuário com esse nome de usuário' });
+      if(userExists.whatsapp == whatsapp) return res.status(400).json({ message: 'Já existe um usuário com esse número de whatsapp' });
+    }
+    
     const senhaHash = await bcrypt.hash(senha, 10);
 
-    const newUser = await User.create({ nome, email, senhaHash, whatsapp, tipo });
+    const existingUsers = await User.countDocuments();
+    const permissions = ['member', 'create-posts', 'delete-own-posts', 'update-own-posts']
+
+    if(existingUsers < 50) {
+      permissions.push('founder')
+    }
+
+    const newUser = await User.create({ nome, email, senhaHash, whatsapp, tipo, permissions });
 
     const token = jwt.sign({ id: newUser._id, tipo: newUser.tipo }, SECRET, { expiresIn: '7d' });
 

@@ -5,6 +5,8 @@ const Schema = mongoose.Schema;
 
 const userSchema = new Schema({
   nome: { type: String, required: true },
+  profilePicUrl : {type: String, require: false},
+  permissions : [{type: String, require: false}],
   tipo: { type: String, enum: ['aluno-lider', 'aluno'], required: true },
   whatsapp: { type: String, required: true },
   email: { type: String }, // opcional
