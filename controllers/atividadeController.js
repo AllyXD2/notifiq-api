@@ -8,6 +8,8 @@ exports.criarAtividade = async (req, res) => {
   try {
     const { titulo, descricao, dataEntrega, turmaId } = req.body;
 
+    console.log(dataEntrega)
+
     const turma = await Turma.findById(turmaId).populate('alunos');
     if (!turma) return res.status(404).json({ message: 'Turma não encontrada.' });
 
@@ -28,7 +30,7 @@ exports.criarAtividade = async (req, res) => {
       alunosPendentes: turma.alunos.map(a => a._id)
     });
 
-    res.status(201).json({ atividade });
+    res.status(201).json( atividade );
   } catch (error) {
     res.status(500).json({ message: 'Erro ao criar atividade.', error: error.message });
   }
@@ -48,6 +50,22 @@ exports.entregarAtividade = async (req, res) => {
     await atividade.save();
 
     res.json({ message: 'Atividade marcada como entregue.' });
+  } catch (error) {
+    res.status(500).json({ message: 'Erro ao entregar atividade.', error: error.message });
+  }
+};
+
+// Aluno entregar atividade
+exports.pegarAtividades = async (req, res) => {
+  try {
+    const turmaId = req.params.turmaId
+
+    if(!turmaId) return res.status(404).json({ message: 'Id da turma necessário.' });
+
+    const atividades = await Atividade.find({turmaId});
+    if (!atividades) return res.status(404).json({ message: 'Atividade não encontrada.' });
+
+    res.json(atividades);
   } catch (error) {
     res.status(500).json({ message: 'Erro ao entregar atividade.', error: error.message });
   }

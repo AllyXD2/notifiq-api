@@ -5,6 +5,7 @@ const router = express.Router();
 const atividadeController = require('../controllers/atividadeController');
 const authMiddleware = require('../middlewares/authMiddleware');
 
+router.get("/:turmaId", authMiddleware, atividadeController.pegarAtividades);
 router.post('/', authMiddleware, atividadeController.criarAtividade);
 router.patch('/entregar/:alunoId/:atividadeId', atividadeController.entregarAtividade);
 

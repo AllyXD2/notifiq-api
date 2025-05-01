@@ -35,18 +35,40 @@ exports.entrarTurma = async (req, res) => {
     const aluno = await User.findById(alunoId);
     if (!aluno) return res.status(404).json({ message: 'Aluno não encontrado.' });
 
-    const turma = await Turma.findOne({ codigoConvite });
+    const turma = await Turma.findOne({ codigoConvite }).populate("liderId", "_id nome");
     if (!turma) return res.status(404).json({ message: 'Turma não encontrada.' });
 
-    const isAlreadyInTurma = turma.alunos.includes(alunoId);
+    const isAlreadyInTurma = turma.alunos.includes(alunoId) || turma.liderId._id.equals(alunoId);
     if (isAlreadyInTurma) return res.status(400).json({ message: 'Você já está nessa turma.' });
 
     turma.alunos.push(aluno._id);
     await turma.save();
 
-    res.status(201).json({ aluno });
+    res.status(201).json({ turma });
   } catch (error) {
     res.status(500).json({ message: 'Erro ao entrar na turma.', error: error.message });
+  }
+};
+
+exports.pegarTurma = async (req, res) => {
+  try {
+    const alunoId = req.user.id
+    const turmaId = req.params.turmaId;
+
+    const aluno = await User.findOne({_id: alunoId});
+    if(!aluno) return res.status(404).json({ message: 'Erro ao pegar turma : Aluno não encontrado'})
+
+    let turma = await Turma.findById(turmaId);
+    if (!turma) return res.status(404).json({ message: 'Nenhuma turma encontrada com esse id.' });
+    
+    const isInTurma = turma.alunos.includes(alunoId) || turma.liderId.equals(alunoId);
+    if (!isInTurma) return res.status(400).json({ message: 'Você não faz parte desta turma.' });
+
+    await (await turma.populate("alunos", "nome permissions profilePicUrl tipo")).populate("liderId", "nome permissions profilePicUrl tipo")
+
+    res.status(200).json(turma);
+  } catch (error) {
+    res.status(500).json({ message: 'Erro ao pegar turma.', error: error.message });
   }
 };
 

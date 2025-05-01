@@ -10,5 +10,6 @@ const Turma = require('../models/Turma');
 router.post('/', authMiddleware, turmaController.criarTurma);
 router.post('/entrar', authMiddleware, turmaController.entrarTurma);
 router.get('/', authMiddleware, turmaController.listarTurmas);
+router.get('/:turmaId', authMiddleware, turmaController.pegarTurma);
 
 module.exports = router;
