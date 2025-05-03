@@ -6,7 +6,11 @@ const atividadeController = require('../controllers/atividadeController');
 const authMiddleware = require('../middlewares/authMiddleware');
 
 router.get("/:turmaId", authMiddleware, atividadeController.pegarAtividades);
+router.get('/:turmaId/:atividadeId', authMiddleware, atividadeController.pegarAtividade)
+router.patch('/entregar/:atividadeId', authMiddleware, atividadeController.entregarAtividade)
+router.patch('/:turmaId/:atividadeId', authMiddleware, atividadeController.atualizarAtividade)
+router.delete('/:turmaId/:atividadeId', authMiddleware, atividadeController.deletarAtividade)
 router.post('/', authMiddleware, atividadeController.criarAtividade);
-router.patch('/entregar/:alunoId/:atividadeId', atividadeController.entregarAtividade);
+
 
 module.exports = router;

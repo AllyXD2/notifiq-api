@@ -12,7 +12,9 @@ const userSchema = new Schema({
   email: { type: String }, // opcional
   senhaHash: { type: String, required: true },
   turmaId: { type: Schema.Types.ObjectId, ref: 'Turma' }, // só para alunos
-  atividadesEntregues: [{ type: Schema.Types.ObjectId, ref: 'Atividade' }] // atividades já entregues
+  atividadesEntregues: [{ type: Schema.Types.ObjectId, ref: 'Atividade' }],
+  emailVerificado : {type: Boolean, default: false}, // atividades já entregues
+  whatsappVerificado : {type: Boolean, default: false}
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', userSchema);

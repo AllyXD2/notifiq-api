@@ -3,6 +3,9 @@
 const User = require('../models/User');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
+const emailService = require("../utils/emailService")
+const EmailToken = require('../models/EmailToken')
 
 const SECRET = process.env.JWT_SECRET || 'meusegredoseguro'; // Melhor usar env
 
@@ -36,11 +39,23 @@ exports.register = async (req, res) => {
       permissions.push('founder')
     }
 
-    const newUser = await User.create({ nome, email, senhaHash, whatsapp, tipo, permissions });
+    const user = await User.create({ nome, email, senhaHash, whatsapp, tipo, permissions });
 
-    const token = jwt.sign({ id: newUser._id, tipo: newUser.tipo }, SECRET, { expiresIn: '7d' });
+    //Criar token e enviar para email
+    const emailToken = await EmailToken.create({
+      user: user._id,
+      token: crypto.randomBytes(32).toString("hex")
+    })
 
-    res.status(201).json({ token });
+    const url = `${process.env.HOST}/usuario/${user._id}/verificar/${emailToken.token}`
+
+    emailService.sendEmail(user.email, "Verifique seu Email", " Seu link de verificação ", 
+      `<h1> Olá! Você criou uma conta na Notifiq! </h1>
+      <br>
+      <p>Verifique seu email com esse link : ${url} </p>`
+    )
+
+    res.status(201).json({ message: "Usuário criado" });
   } catch (error) {
     res.status(500).json({ message: 'Erro ao cadastrar.', error: error.message });
   }
@@ -61,7 +76,28 @@ exports.login = async (req, res) => {
     const valid = await bcrypt.compare(senha, user.senhaHash);
     if (!valid) return res.status(401).json({ message: 'Senha incorreta.' });
 
-    const token = jwt.sign({ id: user._id, tipo: user.tipo }, SECRET, { expiresIn: '7d' });
+    if(!user.emailVerificado) {
+      const emailToken = await EmailToken.findOne({user: user._id})
+
+      if(!emailToken){
+        const newEmailToken = await EmailToken.create({
+          user: user._id,
+          token: crypto.randomBytes(32).toString("hex")
+        })
+
+        const url = `${process.env.HOST}/usuario/${user._id}/verificar/${newEmailToken.token}`
+
+        emailService.sendEmail(user.email, "Verifique seu Email", " Seu link de verificação ", 
+          `<h1> Olá! Você criou uma conta na Notifiq! </h1>
+          <br>
+          <p>Verifique seu email com esse link : ${url} </p>`
+        )
+      }
+
+      return res.status(400).json({ message: 'Verfique seu email.' });
+    }
+
+    const token = jwt.sign({ id: user._id }, SECRET, { expiresIn: '7d' });
 
     res.json({ token });
   } catch (error) {
