@@ -8,7 +8,7 @@ const { customAlphabet } = require('nanoid');
 
 const generateCodigo = customAlphabet('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', 6);
 
-function getWhatsappRouter(client){
+function getWhatsappRouter(){
     const router = express.Router();
 
     router.post("/send-code", authMiddleware, async (req, res)=>{
@@ -23,7 +23,6 @@ function getWhatsappRouter(client){
             
             const whatsapp = user.whatsapp.replaceAll(' ', '').replaceAll('+', '')
             console.log("Enviou mensagem para : " + whatsapp)
-            client.sendText(whatsapp + '@c.us', `Olá ${user.nome}! Aqui está seu código de verificação : ${whatsappCode.codigo}. \n\n Se você não fez uma conta, por favor, ignore esta mensagem.`)
 
             return res.status(200).json({ message: 'Codigo enviado.' })
         }
@@ -41,7 +40,14 @@ function getWhatsappRouter(client){
         const whatsapp = user.whatsapp.replaceAll(' ', '').replaceAll('+', '')
 
         console.log("Enviou mensagem para : " + whatsapp)
-        client.sendText(whatsapp + '@c.us', `Olá ${user.nome}! Aqui está seu código de verificação : ${whatsappCode.codigo}. \n\n Se você não fez uma conta, por favor, ignore esta mensagem.`)
+        try{
+            await axios.post(process.env.VENOM_API_URL+"/send-message", {
+                number: whatsapp + '@c.us',
+                message:`Olá ${user.nome}! Aqui está seu código de verificação : ${whatsappCode.codigo}. \n\n Se você não fez uma conta, por favor, ignore esta mensagem.`
+            })
+        } catch (error) {
+            return res.status(500).json({message:error.message})
+        }
 
         return res.status(200).json({ message: 'Codigo enviado.' })
     })
@@ -64,7 +70,7 @@ function getWhatsappRouter(client){
             user.whatsappVerificado = true
             await user.save()
 
-            client.sendText(user.whatsapp + '@c.us', `* Seu whatsapp foi verificado com sucesso! * Agora você poderá receber notificações de atividades próximas.`)
+            await axios.post(process.env.VENOM_API_URL+"/send-message",{number: user.whatsapp + '@c.us', message: `* Seu whatsapp foi verificado com sucesso! * Agora você poderá receber notificações de atividades próximas.`})
 
             return res.status(200).json({message: 'Whatsapp verificado.'})
         } catch(error) {
