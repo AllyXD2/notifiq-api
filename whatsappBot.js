@@ -4,12 +4,6 @@ const Turma = require('./models/Turma'); // Assuming you have a model for Turma
 const User = require('./models/User'); // Assuming you have a model for User
 const cron = require('node-cron')
 
-async function createClient(){
-    const client = await venom.create({session: '1746220891716'})
-
-    return client
-}
-
 function seekAttribuitions(){
     Atividade.find({}).then(atividades => {
         atividades.forEach(atividade => {
