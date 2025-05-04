@@ -7,11 +7,11 @@ exports.getUser = async (req, res) =>{
     try{
         const userId = req.params.userId
 
-        const user = await User.findById(userId).select('-senhaHash');
+        const user = await User.findById(userId).select('-senhaHash -whatsapp -email');
 
         if(!user) return res.status(404).json({message: "Usuário não encontrado"})
 
-        return res.status(200).json({user: user})
+        return res.status(200).json(user)
     } catch (error){
         return res.status(400).json({message: "Erro ao pegar usuário : " + error.message })
     }
