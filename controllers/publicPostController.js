@@ -3,7 +3,7 @@ const User = require("../models/User");
 
 exports.listarPosts = exports.criarPostPublico = async (req, res) => {
   try {
-    const publicPosts = await PublicPost.find({}).sort({ createdAt: -1 }).populate("likes", "nome email").populate("userId", "nome")
+    const publicPosts = await PublicPost.find({}).sort({ createdAt: -1 }).populate("likes", "nome").populate("userId", "nome permissions")
 
     res.status(201).json(publicPosts);
   } catch (error) {
@@ -74,3 +74,17 @@ exports.likePost = async (req, res) => {
     res.status(500).json({ message: 'Erro ao gostar de post publico.' + error.message });
   }
 };
+
+exports.getUser = async (req, res) => {
+  try{
+          const userId = req.params.userId
+  
+          const user = await User.findById(userId).select('nome');
+  
+          if(!user) return res.status(404).json({message: "Usuário não encontrado"})
+  
+          return res.status(200).json({user: user})
+      } catch (error){
+          return res.status(400).json({message: "Erro ao pegar usuário : " + error.message })
+      }
+}
