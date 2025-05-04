@@ -21,7 +21,7 @@ exports.criarPost = async (req, res) => {
     if(!user) return res.status(404).json({ message: 'Usuário que cria post é inexistente'});
     if(!titulo || !conteudo) return res.status(400).json({ message: 'Titulo ou conteúdo vázio'});
 
-    const publicPost = await (await (await PublicPost.create({titulo, conteudo, userId})).populate("likes", "nome")).populate("userId", "nome")
+    const publicPost = await (await (await PublicPost.create({titulo, conteudo, userId})).populate("likes", "nome")).populate("userId", "nome permissions")
 
     res.status(201).json(publicPost);
   } catch (error) {

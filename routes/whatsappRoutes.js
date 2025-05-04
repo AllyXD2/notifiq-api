@@ -57,7 +57,7 @@ function getWhatsappRouter(){
         try{
             await axios.post(process.env.VENOM_API_URL+"/send-message", {
                 number: whatsapp + '@c.us',
-                message:`Olá ${user.nome}! Aqui está seu código de verificação : ${whatsappCode.codigo}. \n\n Se você não fez uma conta, por favor, ignore esta mensagem.`
+                message:`Olá ${user.nome}! Aqui está seu código de verificação : ${whatsappCode.codigo}. \n\n Se você não fez uma conta na Notifiq, por favor, ignore esta mensagem.`
             }, {
                 headers: {
                     Authorization: "Bearer " + process.env.VENOM_API_SECRET
