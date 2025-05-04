@@ -4,6 +4,8 @@ const authMiddleware = require('../middlewares/authMiddleware')
 const WhatsappCode = require('../models/WhatsappCode')
 const User = require('../models/User')
 
+const axios = require('axios')
+
 const { customAlphabet } = require('nanoid');
 
 const generateCodigo = customAlphabet('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', 6);
