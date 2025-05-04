@@ -25,6 +25,18 @@ function getWhatsappRouter(){
             
             const whatsapp = user.whatsapp.replaceAll(' ', '').replaceAll('+', '')
             console.log("Enviou mensagem para : " + whatsapp)
+            try{
+                await axios.post(process.env.VENOM_API_URL+"/send-message", {
+                    number: whatsapp + '@c.us',
+                    message:`Olá ${user.nome}! Aqui está seu código de verificação : ${whatsappCode.codigo}. \n\n Se você não fez uma conta, por favor, ignore esta mensagem.`
+                }, {
+                    headers: {
+                        Authorization: "Bearer " + process.env.VENOM_API_SECRET
+                    }
+                })
+            } catch (error) {
+                return res.status(500).json({message:error.message})
+            }
 
             return res.status(200).json({ message: 'Codigo enviado.' })
         }
@@ -46,6 +58,10 @@ function getWhatsappRouter(){
             await axios.post(process.env.VENOM_API_URL+"/send-message", {
                 number: whatsapp + '@c.us',
                 message:`Olá ${user.nome}! Aqui está seu código de verificação : ${whatsappCode.codigo}. \n\n Se você não fez uma conta, por favor, ignore esta mensagem.`
+            }, {
+                headers: {
+                    Authorization: "Bearer " + process.env.VENOM_API_SECRET
+                }
             })
         } catch (error) {
             return res.status(500).json({message:error.message})
@@ -72,7 +88,15 @@ function getWhatsappRouter(){
             user.whatsappVerificado = true
             await user.save()
 
-            await axios.post(process.env.VENOM_API_URL+"/send-message",{number: user.whatsapp + '@c.us', message: `* Seu whatsapp foi verificado com sucesso! * Agora você poderá receber notificações de atividades próximas.`})
+            await axios.post(process.env.VENOM_API_URL+"/send-message",
+                {
+                number: user.whatsapp + '@c.us',
+                message: `* Seu whatsapp foi verificado com sucesso! * Agora você poderá receber notificações de atividades próximas.`
+            }, {
+                headers: {
+                    Authorization: "Bearer " + process.env.VENOM_API_SECRET
+                }
+            })
 
             return res.status(200).json({message: 'Whatsapp verificado.'})
         } catch(error) {
