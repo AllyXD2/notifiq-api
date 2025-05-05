@@ -21,13 +21,22 @@ exports.verifyUser = async (req, res)=>{
     try{
         const {userId, token} = req.params
 
-        if(!userId || !token) return res.status(404).json({message: "Link invalido"})
+        if(!userId || !token)  {
+            console.log("Erro ao validar usuário : Id do usuário ou token não foi passado na url")
+            return res.status(404).json({message: "Link invalido"})
+        }
         
         const user = await User.findOne({_id: userId})
-        if(!user) return res.status(404).json({message: "Link invalido"})
+        if(!user) {
+            console.log("Erro ao validar usuário : Usuário não encontrado com base no id")
+            return res.status(404).json({message: "Link invalido"})
+        }
 
         const emailToken = await EmailToken.findOne({user: userId, token: token})
-        if(!emailToken) return res.status(404).json({message: "Link invalido"})
+        if(!emailToken)  {
+            console.log("Erro ao validar usuário : Token de email não encontrado no banco de dados")
+            return res.status(404).json({message: "Link invalido"})
+        }
         
         await User.updateOne({_id: userId},{emailVerificado: true})
         await EmailToken.deleteOne({_id: emailToken._id})

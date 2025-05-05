@@ -80,6 +80,8 @@ exports.login = async (req, res) => {
       const emailToken = await EmailToken.findOne({user: user._id})
 
       if(!emailToken){
+        console.log("Novo email token criado")
+
         const newEmailToken = await EmailToken.create({
           user: user._id,
           token: crypto.randomBytes(32).toString("hex")
@@ -94,7 +96,7 @@ exports.login = async (req, res) => {
         )
       }
 
-      return res.status(400).json({ message: 'Verfique seu email.' });
+      return res.status(400).json({ message: 'Verfique seu email. Um novo link de verificação foi enviado' });
     }
 
     const token = jwt.sign({ id: user._id }, SECRET, { expiresIn: '7d' });
