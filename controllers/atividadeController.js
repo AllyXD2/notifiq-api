@@ -2,6 +2,7 @@
 
 const Atividade = require('../models/Atividade');
 const Turma = require('../models/Turma');
+const User = require('../models/User');
 
 // Criar atividade
 exports.criarAtividade = async (req, res) => {
@@ -42,13 +43,17 @@ exports.entregarAtividade = async (req, res) => {
     const alunoId = req.user.id
     const { atividadeId } = req.params;
 
+    const user = await User.findById(alunoId)
     const atividade = await Atividade.findById(atividadeId);
     if (!atividade) return res.status(404).json({ message: 'Atividade não encontrada.' });
+    if (!user) return res.status(404).json({ message: 'Usuário não encontrado.' });
 
     atividade.alunosPendentes = atividade.alunosPendentes.filter(id => id.toString() !== alunoId);
     atividade.alunosEntregues.push(alunoId);
+    user.atividadesEntregues.push(atividade._id);
 
     await atividade.save();
+    await user.save();
 
     res.json({ message: 'Atividade marcada como entregue.' });
   } catch (error) {

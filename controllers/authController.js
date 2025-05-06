@@ -12,48 +12,54 @@ const SECRET = process.env.JWT_SECRET || 'meusegredoseguro'; // Melhor usar env
 // Cadastro
 exports.register = async (req, res) => {
   try {
-    const { nome, email, senha, whatsapp, tipo } = req.body;
+    let { nome, email, senha, whatsapp, tipo } = req.body;
 
     if (!nome || !email || !senha || !whatsapp || !tipo) {
       return res.status(400).json({ message: 'Todos os campos são obrigatórios.' });
     }
 
-    if(senha.length < 6) {
+    if (senha.length < 6) {
       return res.status(400).json({ message: 'A senha deve ter pelo menos 6 caracteres.' });
     }
 
-    const userExists = await User.findOne({$or: [{email: email}, {nome: nome}, {whatsapp: whatsapp}]})
+    // Limpa o número do WhatsApp (remove +, (), espaços etc.)
+    whatsapp = whatsapp.replace(/\D/g, '');
 
-    if(userExists) {
-      if(userExists.email == email) return res.status(400).json({ message: 'Já existe um usuário com esse email' });
-      if(userExists.nome == nome) return res.status(400).json({ message: 'Já existe um usuário com esse nome de usuário' });
-      if(userExists.whatsapp == whatsapp) return res.status(400).json({ message: 'Já existe um usuário com esse número de whatsapp' });
+    if (whatsapp.length < 12 || whatsapp.length > 13) {
+      return res.status(400).json({ message: 'Número de WhatsApp inválido. Use o formato com DDI e DDD (ex: 5511999999999).' });
     }
-    
+
+    const userExists = await User.findOne({ $or: [{ email }, { nome }, { whatsapp }] });
+
+    if (userExists) {
+      if (userExists.email === email) return res.status(400).json({ message: 'Já existe um usuário com esse email' });
+      if (userExists.nome === nome) return res.status(400).json({ message: 'Já existe um usuário com esse nome de usuário' });
+      if (userExists.whatsapp === whatsapp) return res.status(400).json({ message: 'Já existe um usuário com esse número de whatsapp' });
+    }
+
     const senhaHash = await bcrypt.hash(senha, 10);
 
     const existingUsers = await User.countDocuments();
-    const permissions = ['member', 'create-posts', 'delete-own-posts', 'update-own-posts']
+    const permissions = ['member', 'create-posts', 'delete-own-posts', 'update-own-posts'];
 
-    if(existingUsers < 50) {
-      permissions.push('founder')
+    if (existingUsers < 50) {
+      permissions.push('founder');
     }
 
     const user = await User.create({ nome, email, senhaHash, whatsapp, tipo, permissions });
 
-    //Criar token e enviar para email
     const emailToken = await EmailToken.create({
       user: user._id,
       token: crypto.randomBytes(32).toString("hex")
-    })
+    });
 
-    const url = `${process.env.HOST}/usuario/${user._id}/verificar/${emailToken.token}`
+    const url = `${process.env.HOST}/usuario/${user._id}/verificar/${emailToken.token}`;
 
-    emailService.sendEmail(user.email, "Verifique seu Email", " Seu link de verificação ", 
+    emailService.sendEmail(user.email, "Verifique seu Email", " Seu link de verificação ",
       `<h1> Olá! Você criou uma conta na Notifiq! </h1>
-      <br>
-      <p>Verifique seu email com esse link : ${url} </p>`
-    )
+       <br>
+       <p>Verifique seu email com esse link : ${url} </p>`
+    );
 
     res.status(201).json({ message: "Usuário criado" });
   } catch (error) {

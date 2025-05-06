@@ -12,6 +12,9 @@ const turmaRoutes = require('./routes/turmaRoutes');
 const atividadeRoutes = require('./routes/atividadeRoutes');
 const postsPublicosRoutes = require('./routes/PostPublicoRoutes');
 const getWhatsappRouter = require('./routes/whatsappRoutes');
+const whatsappNotificationRoutes = require('./routes/whatsappNotificationRoutes') 
+
+const {getAllPendingWhatsappNotifications, sendAllPendingWhatsappNotifications} = require('./controllers/whatsappNotificationsController')
 
 // Inicializando o app
 const app = express();
@@ -30,6 +33,7 @@ app.use('/api/turmas', turmaRoutes);
 app.use('/api/atividades', atividadeRoutes);
 app.use('/api/publicPosts', postsPublicosRoutes);
 app.use('/api/whatsapp', getWhatsappRouter())
+app.use('/api/whatsappNotifications', whatsappNotificationRoutes)
 
 // Rota raiz
 app.get('/', (req, res) => {
@@ -52,10 +56,22 @@ async function connectDB(){
 }
 
 // Inicializar servidor
-const PORT = process.env.PORT || 5000;
+const PORT = 5001;
 
 app.listen(PORT, () => {
   console.log(`🚀 Servidor rodando na porta ${PORT}`);
   connectDB();
   console.log("Conectado ao MongoDB com sucesso!");
+
+  startSeekingAttributions()
 });
+
+async function startSeekingAttributions(){
+
+  sendAllPendingWhatsappNotifications()
+
+  setInterval(async ()=>{
+    sendAllPendingWhatsappNotifications()
+  }, 1000*60*60)
+
+}
