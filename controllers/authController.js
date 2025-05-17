@@ -80,10 +80,12 @@ exports.login = async (req, res) => {
       const emailToken = await EmailToken.findOne({user: user._id})
 
       if(!emailToken){
-        const newEmailToken = await EmailToken.create({
+        const newEmailToken = new EmailToken({
           user: user._id,
           token: crypto.randomBytes(32).toString("hex")
         })
+
+        await newEmailToken.save();
 
         const url = `${process.env.HOST}/usuario/${user._id}/verificar/${newEmailToken.token}`
 
