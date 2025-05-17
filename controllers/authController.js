@@ -55,10 +55,13 @@ exports.register = async (req, res) => {
 
     const user = await User.create({ nome, email, senhaHash, whatsapp, tipo, permissions });
 
-    const emailToken = await EmailToken.create({
+    const emailToken = new EmailToken({
       user: user._id,
       token: crypto.randomBytes(32).toString("hex")
     });
+
+    await emailToken.save();
+    console.log(emailToken)
 
     const url = `${process.env.HOST}/usuario/${emailToken.user}/verificar/${emailToken.token}`
 
@@ -93,10 +96,13 @@ exports.login = async (req, res) => {
       const emailToken = await EmailToken.findOne({user: user._id})
 
       if(!emailToken){
-        const newEmailToken = await EmailToken.create({
+        const emailToken = new EmailToken({
           user: user._id,
           token: crypto.randomBytes(32).toString("hex")
-        })
+        });
+    
+        await emailToken.save();
+        console.log(emailToken)
 
         const url = `${process.env.HOST}/usuario/${newEmailToken.user}/verificar/${newEmailToken.token}`
 
