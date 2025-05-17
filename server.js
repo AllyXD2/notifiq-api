@@ -58,7 +58,7 @@ async function connectDB(){
 }
 
 // Inicializar servidor
-const PORT = 5001;
+const PORT = 5000;
 
 app.listen(PORT, () => {
   console.log(`🚀 Servidor rodando na porta ${PORT}`);
